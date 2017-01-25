@@ -1,4 +1,4 @@
-import os, imp, path
+import os, imp
 import numpy as np
 import pandas as pd
 

@@ -98,18 +98,22 @@ def reduce_spectra_collection(spetra_data, wvl_data, linelist_subset):
         results.append(np.median(spectra_median))
     return results
 
-def plot_abundace_grid(data, prefix=''):
+def plot_abundace_grid(data, prefix='', lines_wvl=None):
     # data is assumed to be a MxN pandas array
     colnames = data.keys().values
     plot_y = ['teff', 'logg', 'feh']
-    plot_y_fixed = [5650, 4., -0.25]
+    plot_y_fixed = [5600, 4., -0.25]
     plot_x = 'abund'
     col_lines = [col for col in colnames if 'line' in col]
     # prepare grid of observations
     abund_uniq = np.unique(data[plot_x+'_min'])
     abund_range = [np.nanmin(data[plot_x+'_min'].values), np.nanmax(data[plot_x+'_max'].values)]
+    # mean of min and max of observed abundance value
+    x_labels = (np.unique(data[plot_x+'_max']) + np.unique(data[plot_x+'_min'])) / 2.
     # plot gathered information from spectra at absorption lines
-    for col_line_use in col_lines:
+    for i_line in range(len(col_lines)):
+        col_line_use = col_lines[i_line]
+        print 'Plotting data for '+col_line_use
         for i_p_y in range(len(plot_y)):
             # determine rows with predefined constant values of parameters
             const_cols = [v for v in range(len(plot_y)) if i_p_y != v]
@@ -117,20 +121,28 @@ def plot_abundace_grid(data, prefix=''):
                                               data[plot_y[const_cols[1]] + '_min'] == plot_y_fixed[const_cols[1]])
             # create image array that will be shown in plot
             plot_y_use = plot_y[i_p_y]
+            print ' Parameter '+plot_y_use
             y_uniq = np.unique(data[plot_y_use+'_min'])
             y_range = [np.nanmin(data[plot_y_use+'_min'].values), np.nanmax(data[plot_y_use+'_max'].values)]
+            y_labels = (np.unique(data[plot_y_use + '_max']) + np.unique(data[plot_y_use + '_min'])) / 2.
             img_z = np.ndarray((len(y_uniq), len(abund_uniq)))
             for i_val in range(len(y_uniq)):
                 idx_select = np.logical_and(data[plot_y_use+'_min'] == y_uniq[i_val],
                                             idx_const_values)
                 img_z[i_val] = data[col_line_use][idx_select]
             # now plot resulting image
-            plt.imshow(img_z, cmap='gist_heat', vmin=0, vmax=1, interpolation="nearest",
-                       extent=[abund_range[0], abund_range[1], y_range[0], y_range[1]])
+            plt.imshow(img_z, cmap='gist_heat', vmin=0, vmax=1, interpolation="nearest"),
+                       #extent=[abund_range[0], abund_range[1], y_range[0], y_range[1]])
             plt.xlabel('Abundance')
             plt.ylabel(plot_y_use.capitalize())
-            #plt.xlim(abund_range)
-            #plt.ylim(y_range)
+            if lines_wvl is not None:
+                plt.title('Absorption line at '+str(lines_wvl[i_line]))
+            # plt.xlim(abund_range)
+            # plt.ylim(y_range)
+            idx_x_ticks = range(0, len(x_labels), 2)
+            plt.xticks(idx_x_ticks, x_labels[idx_x_ticks])
+            idx_y_ticks = range(0, len(y_labels), 2)
+            plt.yticks(idx_y_ticks, y_labels[idx_y_ticks])
             plt.colorbar()
             plt.tight_layout()
             plt.savefig(prefix+'_'+col_line_use+'_'+plot_y_use+'.png', dpi=200)

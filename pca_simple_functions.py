@@ -98,6 +98,5 @@ def visualize_components(comp_data, labels, prefix=None, y_range=(-1,1)):
         ax.legend(handles=[label_0, label_1, label_2, label_3, label_4], loc='upper right', bbox_to_anchor=(1.42, 0.65))
         ax.grid()
         fig.savefig(prefix+'_component_weights_{:02}.png'.format(i_c), bbox_inches='tight')
+        plt.close(fig)
         i_c += 1
-    fig.clear()
-    plt.close()

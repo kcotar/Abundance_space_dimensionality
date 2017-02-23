@@ -12,6 +12,11 @@ def get_abundance_error_cols(col_names):
     return abund_col_names
 
 
+def get_element_names(col_names):
+    names = [val.split('_')[0].capitalize() for val in col_names]
+    return names
+
+
 def move_to_dir(path):
     if not(os.path.isdir(path)):
         os.mkdir(path)
